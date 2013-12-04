@@ -47,9 +47,7 @@ MapEditor::MapEditor(QWidget *parent, QMainWindow *main) :
     setMouseTracking(true);
     this->main = main;
     texScale =  1/30.0;
-    //spawnPointLimit = SPAWN_POINT_LIMIT;
     degree = -90;
-    //cam = Camera(0,0,1.00, 0, 0, 1 );
     imgScale = 0.4;
     zoomFactor = 100;
     posX=posY=0;
@@ -111,7 +109,6 @@ void MapEditor::wheelEvent(QWheelEvent *wheel)
     {
         ortho -= ratio;
         orthoValue +=ratio;
- //       imgScale +=0.05;
         zoomFactor+=10;
 
     }
@@ -120,15 +117,9 @@ void MapEditor::wheelEvent(QWheelEvent *wheel)
         zoomFactor-=10;
         ortho += ratio;
         orthoValue -=ratio;
-      //  imgScale -= 0.05;
     }
 
-   // glMatrixMode( GL_PROJECTION );
-
-    //  gluPerspective(45,(float)w/h, 0.01,100);
-
     glOrtho(-ortho+posX, ortho-posX, -ortho+posY, ortho-posY, -1, 1);
-   // glMatrixMode( GL_MODELVIEW );
     std::cout<<"Zoom: "<<zoomFactor<<std::endl;
 }
 
@@ -136,9 +127,7 @@ void MapEditor::mousePressEvent(QMouseEvent *event)
 {
     startX = convertCoordinate(event->pos().x(),0);
     startY = convertCoordinate(event->pos().y(),1);
-   // endX = event->pos().x();
-   // endY = event->pos().y();
-   // std::cout<<startX<<"-"<<startY<<std::endl;
+    
     if(event->button() == 4)
     {
         move = true;
@@ -148,7 +137,6 @@ void MapEditor::mousePressEvent(QMouseEvent *event)
     {
       findClosestEntity(&startX,&startY);
     }
-   // std::cout<<startX<<"-"<<startY<<std::endl;
     if(event->button()==2)
     {
         discoverAndDelete(startX,startY);
@@ -176,9 +164,8 @@ void MapEditor::mousePressEvent(QMouseEvent *event)
         ((MainWindow*)main)->setWindowModified(true);
     }
 
-   // updateGL();
-
 }
+
 void MapEditor::mouseReleaseEvent(QMouseEvent *event)
 {
     if(event->button() == 2)
@@ -203,9 +190,7 @@ void MapEditor::mouseReleaseEvent(QMouseEvent *event)
 
         float x1 = convertCoordinate( event->pos().x(),0);
         float y1 = convertCoordinate( event->pos().y(),1);
-         //std::cout<<x1<<"-"<<y1<<std::endl;
         findClosestEntity(&x1,&y1);
-        //std::cout<<x1<<"-"<<y1<<std::endl;
         if(!space)
         {
             if( fabs(startX-convertCoordinate(event->pos().x(),0)) > fabs(startY-convertCoordinate(event->pos().y(),1)) )
@@ -271,9 +256,7 @@ void MapEditor::paintGL()
         {
             posX = 0;
             posY = 0;
-            //ortho=1;
-         //  orthoValue=1;
-           return;
+            return;
         }
         if(startX-currentX == 0 || startY-currentY == 0)
             return;
@@ -300,12 +283,9 @@ void MapEditor::resizeGL(int w, int h)
 
     glMatrixMode( GL_PROJECTION );
 
-    //  gluPerspective(45,(float)w/h, 0.01,100);
 
     glOrtho( -ortho, ortho, -ortho, ortho, -1, 1);
     glMatrixMode( GL_MODELVIEW );
-    //glLoadIdentity();
-    //gluLookAt(0,0,55, 0,0,0, 0,1,0 );
 
 
 }
@@ -354,8 +334,6 @@ void MapEditor::showEntities()
         }
 
         
-        //std::cout<<"Start X: "<<convertCoordinate(lineVector.at(i).startX,0)<<", Start Y: "<<convertCoordinate(lineVector.at(i).startY,1);
-        //std::cout<<" | End X: "<<convertCoordinate(lineVector.at(i).endX,0)<<", End Y: "<<convertCoordinate(lineVector.at(i).endY,1)<<std::endl;
     }
 
     size = mapEntity2Vector.size();
@@ -415,14 +393,11 @@ void MapEditor::discoverAndDelete(float x, float y)
     {
         float left = (itr->entityPosition.endZ - itr->entityPosition.startZ) * ( x - itr->entityPosition.startX );
         float right = (itr->entityPosition.endX - itr->entityPosition.startX) * ( y - itr->entityPosition.startZ );
-        // std::cout<<"FABS: "<<fabs(fabs(left) - fabs(right))<<std::endl;
+        
         if( fabs(fabs(left) - fabs(right)) <= 0.003 )
         {
             if( (fabs(x)>=fabs(itr->entityPosition.startX) && fabs(x)<= fabs(itr->entityPosition.endX)) || ( fabs(x)<=fabs(itr->entityPosition.startX) && fabs(x)>= fabs(itr->entityPosition.endX)) )
                 mapEntity4Vector.erase(itr);
-            /* else
-           if( (fabs(y)>=fabs(itr->entityPosition.startZ) && fabs(y)<= fabs(itr->entityPosition.endZ)) || ( fabs(y)<=fabs(itr->entityPosition.startZ) && fabs(y)>= fabs(itr->entityPosition.endZ)) )
-               mapEntity4Vector.erase(itr);*/
         }
     }
 
@@ -449,7 +424,6 @@ void MapEditor::discoverAndDelete(float x, float y)
 
 void MapEditor::saveToFile( std::string fileName )
 {
-    //preventCollision();
     std::ofstream file;
     file.open( fileName.c_str(), std::ios::out | std::ios::binary );
     
@@ -589,7 +563,6 @@ void MapEditor::undo()
 
 void MapEditor::updateScreenResolution(int x, int y)
 {
-    //texScale = ( convertCoordinate(y/30.0,0) / 30.0 );
     screenX = x;
     screenY = y;
 }
@@ -600,7 +573,6 @@ void MapEditor::findClosestEntity(float* x, float* y)
     float gap = 0.015;
     for(int i=0;i<size;i++)
     {
-        //std::cout<<mapEntityVector.at(i).entityPosition.startX<<" - "<<*x<<std::endl;
         if( ( mapEntity4Vector.at(i).entityPosition.startX <= *x + gap && mapEntity4Vector.at(i).entityPosition.startX >= *x - gap ) &&
                 ( mapEntity4Vector.at(i).entityPosition.startZ <= *y + gap && mapEntity4Vector.at(i).entityPosition.startZ >= *y - gap ) )
         {
@@ -616,7 +588,6 @@ void MapEditor::findClosestEntity(float* x, float* y)
         }
 
     }
-    // std::cout<<*x<<"-"<<*y<<std::endl;
 }
 
 void MapEditor::setScaleFactor(int value)
@@ -649,7 +620,6 @@ void MapEditor::loadTexture(int texId, const char *path)
     textureList[texId] = LoadTexture(path);
     std::cout<<"WIDTH:"<<getTextureWidth(texId)<<std::endl;
 
-    //std::cout<<textureList[texId]<<std::endl;
 }
 
 void MapEditor::loadModelTexture(std::string name, const char *path, float scaleFactor)
@@ -666,20 +636,6 @@ void MapEditor::drawImage(int type, float x, float z)
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glDepthMask(GL_FALSE);
-
-    //glEnable(GL_ALPHA_TEST);
-    //glAlphaFunc(GL_GREATER, 0);
-    /*
-    switch(getTextureWidth(textureList[type]))
-    {
-        case 32: imgScale = .4; break;
-        case 48: imgScale = .5; break;
-        case 64: imgScale = 2; break;
-        case 128: imgScale = .1; break;
-        case 256: imgScale = .1; break;
-
-    }*/
-  //  imgScale = .4;
 
     glTranslatef(x,z,0);
 
@@ -716,19 +672,6 @@ void MapEditor::drawImage(std::string name, float x, float z, int direction)
     glEnable(GL_BLEND) ;
     glDepthMask(GL_FALSE) ;
 
-    //glEnable(GL_ALPHA_TEST);
-    // glAlphaFunc(GL_GREATER, 0);
-
-/*
-    switch(getTextureWidth(modelTextureList[name]))
-    {
-        case 32: imgScale = .4; break;
-        case 48: imgScale = .5; break;
-        case 64: imgScale = 2; break;
-        case 128: imgScale = .1; break;
-        case 256: imgScale = 1; break;
-    }
-*/
     modelScale = modelScaleFactorList[name];
 
     glTranslatef(x,z,0);
